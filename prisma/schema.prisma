@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  GENERAL
+}
+
+enum ItemType {
+  BOAT
+  ENGINE
+}
+
+enum RoleType {
+  STORAGE
+  GO
+  RETURN
+}
+
+enum ImportType {
+  USERS
+  MEMBERS
+}
+
+model User {
+  id              Int             @id @default(autoincrement())
+  loginId         String          @unique
+  passwordHash    String
+  displayName     String
+  role            UserRole
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  sessions        Session[]
+  assignments     Assignment[]    @relation("AssignmentUpdatedBy")
+  updatedDays     ScheduleDay[]   @relation("ScheduleDayUpdatedBy")
+  importHistories ImportHistory[] @relation("ImportExecutedBy")
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Member {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  assignments Assignment[]
+}
+
+model ScheduleDay {
+  id                Int          @id @default(autoincrement())
+  targetDate        DateTime     @unique
+  year              Int
+  month             Int
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  lastUpdatedAt     DateTime?
+  lastUpdatedByUserId Int?
+  assignments       Assignment[]
+  lastUpdatedByUser User?        @relation("ScheduleDayUpdatedBy", fields: [lastUpdatedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([year, month])
+}
+
+model Assignment {
+  id              Int         @id @default(autoincrement())
+  scheduleDayId   Int
+  itemType        ItemType
+  roleType        RoleType
+  memberId        Int?
+  updatedByUserId Int?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  scheduleDay     ScheduleDay @relation(fields: [scheduleDayId], references: [id], onDelete: Cascade)
+  member          Member?     @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  updatedByUser   User?       @relation("AssignmentUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([scheduleDayId, itemType, roleType])
+  @@index([memberId])
+}
+
+model ImportHistory {
+  id               Int        @id @default(autoincrement())
+  importType       ImportType
+  fileName         String
+  rowCount         Int
+  success          Boolean
+  errorSummary     String?
+  executedByUserId Int?
+  executedAt       DateTime   @default(now())
+  executedByUser   User?      @relation("ImportExecutedBy", fields: [executedByUserId], references: [id], onDelete: SetNull)
+}

@@ -1,0 +1,46 @@
+{
+  "admin": {
+    "password": "ryudaiwind",
+    "displayName": "管理者"
+  },
+  "utsumi": {
+  "password": "imustu",
+  "displayName": "内海大介"
+  },
+  "guest": {
+  "password": "tseug",
+  "displayName": "内海大介"
+  },
+  "himeno": {
+    "password": "onemih",
+    "displayName": "島袋妃乃"
+  },
+  "chisato": {
+    "password": "otasihc",
+    "displayName": "島田千聡"
+  },
+  "erika": {
+    "password": "akire",
+    "displayName": "藤田恵利佳"
+  },
+  "takuto": {
+    "password": "otukat",
+    "displayName": "三好拓人"
+  },
+  "yuzuki": {
+    "password": "ikuzuy",
+    "displayName": "松本柚希"
+  },
+  "miharu": {
+    "password": "urahim",
+    "displayName": "武藤美晴"
+  },
+  "souka": {
+    "password": "akuos",
+    "displayName": "小野想禾"
+  },
+  "yuna": {
+    "password": "anuy",
+    "displayName": "知花柚奈"
+  }
+}

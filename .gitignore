@@ -1,0 +1,15 @@
+.next
+node_modules
+.env
+coverage
+dist
+*.log
+dev.db
+dev.db-journal
+prisma/dev.db
+.history
+.runtime
+backups
+data/*.db
+data/*.db-journal
+.cache/

