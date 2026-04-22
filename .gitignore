@@ -13,5 +13,4 @@ backups
 data/*.db
 data/*.db-journal
 .cache/
-private-imports/
-*.private.csv
+private-imports/*.private.csv

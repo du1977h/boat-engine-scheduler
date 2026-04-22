@@ -44,6 +44,8 @@ which npm
 | `SESSION_SECRET` | 必須 | 長くランダムな文字列 |
 | `APP_URL` | 必須 | 公開URL。例: `https://mw1.sailripper.top` |
 
+# 2. 準備
+
 ## CSVファイルの作成
 private-imports/members.private.csv: ログイン情報
 private-imports/users.private.csv: 部員メンバーCSV
@@ -60,15 +62,19 @@ sudo mkdir -p /var/www
 sudo chown -R "${USER}:${USER}" /var/www
 git clone <repo-url> /var/www/boat-engine-scheduler
 cd /var/www/boat-engine-scheduler
-npm run setup:dev
 mkdir -p private-imports
 # 事前に用意した実運用CSVを配置
-npm run import:users -- private-imports/users.private.csv
-npm run import:members -- private-imports/members.private.csv
-npm run dev -- --hostname 0.0.0.0 --port 3100
 ```
 
-ブラウザでは `http://<サーバーIP>:3100/login` を開きます。
+CSV読み込み＋起動
+```
+npm run setup:dev
+npm run import:users -- private-imports/users.private.csv
+npm run import:members -- private-imports/members.private.csv
+npm run dev -- --hostname 0.0.0.0 --port 3010
+```
+
+ブラウザでは `http://<サーバーIP>:3010/login` を開きます。
 
 ### 6. 変更反映とやり直し
 
