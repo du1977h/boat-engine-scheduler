@@ -12,6 +12,26 @@
 - 一般ユーザーも月カレンダー編集、集計閲覧、CSV出力が可能
 - PWAとしてホーム画面追加に対応
 
+## Node.jsのインストール
+
+```
+# インストール
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash -
+sudo apt-get install -y nodejs
+
+# 確認
+node -v
+npm -v
+which node
+which npm
+```
+
+期待する状態:
+
+- `node -v` が `v22.x.x` 以上
+- `which node` が `/usr/bin/node`
+- `which npm` が `/usr/bin/npm` または同等の固定パス
+
 ## 環境変数一覧
 
 `.env.example` をコピーして `.env` を作成してください。  
@@ -171,72 +191,6 @@ APP_URL="https://mw1.sailripper.top"
 本番へ切り替えるときは、`.env` の `SESSION_COOKIE_NAME` を `__Host-boat_engine_session` に変更してください。  
 HTTP の `localhost` 開発では `__Host-` 付きCookieはブラウザに保存されません。
 
-### 2.1 不審ファイルの確認と隔離
-
-本番切替や障害調査の前に、アプリ配下に本来存在しない `.config/`、`.local/`、不審な実行ファイル、user systemd unit が混ざっていないか確認してください。  
-見つけた場合はすぐ削除せず、まず隔離して実行不能にします。
-
-確認例:
-
-```bash
-cd /var/www/boat-engine-scheduler
-find .config .local -maxdepth 4 -printf '%M %u %g %p\n' 2>/dev/null
-find . -path './.git' -prune -o -path './node_modules' -prune -o -name '.X11-linux' -print
-find .config/systemd -type f -maxdepth 4 -print -exec sed -n '1,120p' {} \; 2>/dev/null
-```
-
-隔離例:
-
-```bash
-cd /var/www/boat-engine-scheduler
-STAMP="$(date +%Y%m%d-%H%M%S)"
-mkdir -p ".incident-quarantine/$STAMP"
-chmod 000 .local/bin/.X11-linux 2>/dev/null || true
-mv .local/bin/.X11-linux ".incident-quarantine/$STAMP/X11-linux.bin" 2>/dev/null || true
-mv .config/.X11-linux ".incident-quarantine/$STAMP/X11-linux.config" 2>/dev/null || true
-mv .config/systemd/user/php-fpm-pool.service ".incident-quarantine/$STAMP/php-fpm-pool.service" 2>/dev/null || true
-find .incident-quarantine -type d -exec chmod 700 {} +
-find .incident-quarantine -type f -exec chmod 600 {} +
-```
-
-隔離後も、それだけで安全になったと見なさないでください。  
-`cron`、`systemd`、`authorized_keys`、`sudoers`、`/tmp`、`/var/tmp` も確認し、VPS侵害が疑わしい場合は新規VPSへの再構築を優先します。
-
-### 3. 実行物混入チェック
-
-本番では `.runtime/standalone` 直下に想定外のファイルが混ざっていないことを起動前に検査します。  
-手動確認したい場合は次を実行してください。
-
-```bash
-cd /var/www/boat-engine-scheduler
-npm run runtime:verify
-```
-
-期待する結果:
-
-- `runtime verification passed` が表示される
-- `.runtime/standalone/.rtx` など想定外の実行ファイルがあれば失敗する
-
-### 4. Node.js の確認
-
-この README では、Node.js は NodeSource などで OS に直接インストール済みである前提です。  
-systemd からも `/usr/bin/node` を直接使います。
-
-確認:
-
-```bash
-node -v
-npm -v
-which node
-which npm
-```
-
-期待する状態:
-
-- `node -v` が `v22.x.x` 以上
-- `which node` が `/usr/bin/node`
-- `which npm` が `/usr/bin/npm` または同等の固定パス
-
 ### 5. 依存関係とビルド
 
 すでに実装中に `npm run setup:dev` を実行済みであっても、本番切替時は `boat` ユーザー権限で依存関係とビルド成果物を作り直してください。
@@ -258,7 +212,7 @@ npm run build:prod
 sudo -u boat -H bash -c '
 cd /var/www/boat-engine-scheduler &&
 npm run import:users -- private-imports/users.private.csv
-npm run import:members -- public/samples/members.sample.csv
+npm run import:members -- private-imports/members.private.csv
 '
 ```
 
@@ -540,7 +494,6 @@ npm run backup:create -- /srv/backups/boat-engine-scheduler
 - `.env.example`
 - SQLite ファイル
 - `deploy/`
-- `config/`
 - `prisma/`
 - `public/samples/`
 - `package.json`
@@ -580,7 +533,7 @@ sudo systemctl start boat-engine-scheduler
 - systemd ではシェル初期化に依存せず、`/usr/bin/node` のような固定パスを使う
 - `.runtime/standalone` 直下に想定外の実行ファイルがないことを `npm run runtime:verify` または systemd の `ExecStartPre` で必ず確認する
 - 本番サーバーで `curl | bash` を安易に実行しない
-- `.config/` や `.local/` にアプリ由来でないバイナリや user systemd unit が混ざっていないか確認し、不審物は `.incident-quarantine/` に隔離して証跡を残す
+- `.config/` にアプリ由来でないバイナリや user systemd unit が混ざっていないか確認し、不審物は `.incident-quarantine/` に隔離して証跡を残す
 - VPS侵害が疑われる場合は kill と設定修正だけで済ませず、`cron`、`systemd`、`authorized_keys`、`sudoers` を確認し、必要なら新規VPSへ再構築する
 
 ## 既知の制約

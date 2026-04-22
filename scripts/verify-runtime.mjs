@@ -9,7 +9,6 @@ const runtimeDir = resolve(rootDir, ".runtime", "standalone");
 const allowedEntries = new Set([
   ".next",
   ".env",
-  "config",
   "data",
   "node_modules",
   "package.json",
