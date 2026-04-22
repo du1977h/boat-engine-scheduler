@@ -52,7 +52,9 @@ cat <<'EOF'
 
 セットアップが完了しました。次の例で作業を始められます。
 
-  npm run import:users -- public/samples/users.sample.csv
+  mkdir -p private-imports
+  cp /path/to/your/users.csv private-imports/users.private.csv
+  npm run import:users -- private-imports/users.private.csv
   npm run import:members -- public/samples/members.sample.csv
   npm run dev -- --hostname 0.0.0.0 --port 3100
 

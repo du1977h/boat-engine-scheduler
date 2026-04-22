@@ -4,7 +4,7 @@ import { importUsersCsv } from "../lib/csv";
 async function main() {
   const filePath = process.argv[2];
   if (!filePath) {
-    throw new Error("使い方: npm run import:users -- public/samples/users.sample.csv");
+    throw new Error("使い方: npm run import:users -- private-imports/users.private.csv");
   }
   const text = await fs.readFile(filePath, "utf8");
   const result = await importUsersCsv(text, filePath);

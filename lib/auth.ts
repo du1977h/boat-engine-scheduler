@@ -14,11 +14,20 @@ function getEnv(name: string) {
 }
 
 export function getSessionCookieName() {
-  return process.env.SESSION_COOKIE_NAME || "boat_engine_session";
+  const configuredName = process.env.SESSION_COOKIE_NAME;
+  if (!configuredName) {
+    return process.env.NODE_ENV === "production" ? "__Host-boat_engine_session" : "boat_engine_session";
+  }
+
+  if (process.env.NODE_ENV !== "production" && (configuredName.startsWith("__Host-") || configuredName.startsWith("__Secure-"))) {
+    return "boat_engine_session";
+  }
+
+  return configuredName;
 }
 
 function hashToken(token: string) {
-  return crypto.createHash("sha256").update(token).digest("hex");
+  return crypto.createHmac("sha256", getEnv("SESSION_SECRET")).update(token).digest("hex");
 }
 
 export async function verifyPassword(password: string, hash: string) {
@@ -30,10 +39,15 @@ export async function hashPassword(password: string) {
 }
 
 export async function createSession(userId: number) {
-  getEnv("SESSION_SECRET");
   const token = crypto.randomBytes(32).toString("hex");
   const tokenHash = hashToken(token);
   const expiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
+
+  await prisma.session.deleteMany({
+    where: {
+      OR: [{ userId }, { expiresAt: { lt: new Date() } }]
+    }
+  });
 
   await prisma.session.create({
     data: {
@@ -49,7 +63,8 @@ export async function createSession(userId: number) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    expires: expiresAt
+    expires: expiresAt,
+    priority: "high"
   });
 }
 
@@ -68,7 +83,8 @@ export async function destroySession() {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    expires: new Date(0)
+    expires: new Date(0),
+    priority: "high"
   });
 }
 
@@ -93,6 +109,13 @@ export async function getUserBySessionToken(token?: string | null) {
   });
 
   if (!session || session.expiresAt < new Date()) {
+    if (session) {
+      await prisma.session.delete({
+        where: {
+          id: session.id
+        }
+      });
+    }
     return null;
   }
 

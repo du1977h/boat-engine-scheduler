@@ -17,7 +17,8 @@ export function LogoutButton() {
     try {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
-        credentials: "same-origin"
+        credentials: "same-origin",
+        cache: "no-store"
       });
 
       const data = (await response.json().catch(() => null)) as { message?: string } | null;

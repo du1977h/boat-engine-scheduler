@@ -14,6 +14,8 @@ export function LoginForm() {
     const formData = new FormData(event.currentTarget);
     const response = await fetch("/api/auth/login", {
       method: "POST",
+      credentials: "same-origin",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json"
       },

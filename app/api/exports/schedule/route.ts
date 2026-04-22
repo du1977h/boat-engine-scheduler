@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/auth";
+import { jsonNoStore } from "@/lib/http";
 import { csvTextResponse } from "@/lib/csv";
 import { buildScheduleCsv } from "@/lib/exporters";
 
 export async function GET(request: Request) {
   const user = await requireApiUser();
   if (!user) {
-    return NextResponse.json({ message: "ログインしてください。" }, { status: 401 });
+    return jsonNoStore({ message: "ログインしてください。" }, { status: 401 });
   }
   const { searchParams } = new URL(request.url);
   const year = Number(searchParams.get("year"));

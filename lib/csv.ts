@@ -2,6 +2,7 @@ import { ImportType, Prisma } from "@prisma/client";
 import { parse } from "csv-parse/sync";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
+import { textNoStore } from "@/lib/http";
 import { memberCsvRowSchema, normalizeUserRole, userCsvRowSchema } from "@/lib/validations";
 
 type ImportResult = {
@@ -170,7 +171,7 @@ export async function importUsersCsv(csvText: string, fileName: string, executed
 }
 
 export function csvTextResponse(fileName: string, csvText: string) {
-  return new Response(csvText, {
+  return textNoStore(csvText, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="${encodeURIComponent(fileName)}"`
