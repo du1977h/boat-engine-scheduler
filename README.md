@@ -3,39 +3,7 @@
 ボートとエンジンの「保管 / 行き / 帰り」を、日付単位の月カレンダーで管理する日本語対応PWAです。  
 スマホ最優先で、部員CSV・ユーザーCSVの取り込み、ログイン、月カレンダー編集、月次集計、CSV出力までを単一VPS + Node.js + SQLite 前提で実装しています。
 
-## 目次
 
-- [1. はじめに](#section-1)
-- [1-1 アプリ概要](#section-1-1)
-
-- [2. 準備](#section-2)
-- [2-1 Node.jsのインストール](#section-2-1)
-- [2-2 環境変数一覧](#section-2-2)
-- [2-3 CSVファイルの作成](#section-2-3)
-
-- [3. 最短スタート](#section-3)
-- [3-1 最短スタート手順](#section-3-1)
-- [3-2 変更反映とやり直し](#section-3-2)
-
-- [4. 本番デプロイ](#section-4)
-- [4-1 本番デプロイ手順](#section-4-1)
-- [4-2 `boat` ユーザー作成](#section-4-2)
-- [4-3 アプリ配置](#section-4-3)
-- [4-4 依存関係とビルド](#section-4-4)
-- [4-5 初期ユーザーと部員投入](#section-4-5)
-- [4-6 単体起動確認](#section-4-6)
-- [4-7 本番権限の固定](#section-4-7)
-- [4-8 `mw1.sailripper.top` のDNS確認](#section-4-dns)
-- [4-9 systemd 設定例](#section-4-8)
-- [4-10 更新反映手順](#section-4-9)
-- [4-11 nginx リバースプロキシ設定例](#section-4-10)
-- [4-12 HTTPS 化手順例](#section-4-11)
-- [4-13 SQLite ファイル配置の考え方](#section-sqlite)
-
-- [5. その他](#section-5)
-- [5-1 バックアップの考え方](#section-5-1)
-- [5-2 セキュリティ上の注意点](#section-5-2)
-- [5-3 今後の改善案](#section-5-3)
 
 <a id="section-1"></a>
 # 1. はじめに
@@ -322,7 +290,7 @@ sudo ls -l /var/www/boat-engine-scheduler/.env
 - `data/` 配下ファイルは `660`
 - `.incident-quarantine/` を残す場合はディレクトリ `700`、配下ファイル `600`
 
-<a id="section-4-dns"></a>
+<a id="section-4-8"></a>
 ## 4-8 `mw1.sailripper.top` のDNS確認
 
 `mw1.sailripper.top` がこのVPSのグローバルIPを向いていることを確認してください。
@@ -335,7 +303,7 @@ dig +short mw1.sailripper.top
 
 返ってきたIPがこのVPSのIPと一致していれば次へ進めます。
 
-<a id="section-4-8"></a>
+<a id="section-4-9"></a>
 ## 4-9 systemd 設定例
 
 ファイル例: `deploy/boat-engine-scheduler.service`
@@ -396,36 +364,8 @@ sudo systemctl status boat-engine-scheduler.service
 最初の1回は必ず上の `cp` と `enable --now` を先に実行してください。
 また、`/var/www/boat-engine-scheduler` は `boat` 専用権限にしているため、`du` など別ユーザーでは通常 `cd` できません。中を確認したい場合は `sudo -u boat -H bash -c 'cd /var/www/boat-engine-scheduler && ls'` か `sudo ls -la /var/www/boat-engine-scheduler` を使ってください。
 
-<a id="section-4-9"></a>
-## 4-10 更新反映手順
-
-以前の `npm run build && sudo systemctl restart ...` は、稼働中の `next start` が参照する `.next` を同じ場所で再ビルドするため、低スペックVPSではCPU負荷や不安定化の原因になりえます。  
-このリポジトリでは本番用ビルドを `.runtime/standalone` に分離するように変更したので、以後は以下を使ってください。
-
-```bash
-npm run build:prod
-sudo systemctl restart boat-engine-scheduler
-sudo systemctl status boat-engine-scheduler --no-pager
-```
-
-CPUピークをさらに抑えたい場合は、旧プロセスを止めてからビルドしてください。
-
-```bash
-sudo systemctl stop boat-engine-scheduler
-npm run build:prod
-sudo systemctl start boat-engine-scheduler
-sudo systemctl status boat-engine-scheduler --no-pager
-```
-
-ビルド後に本番権限へ戻すのを忘れないでください。
-
-```bash
-sudo bash scripts/harden-production.sh /var/www/boat-engine-scheduler boat boat
-sudo systemctl restart boat-engine-scheduler
-```
-
 <a id="section-4-10"></a>
-## 4-11 nginx リバースプロキシ設定例
+## 4-10 nginx リバースプロキシ設定例
 
 初回は証明書がまだ無いので、先に HTTP-only 設定で nginx を通してください。  
 ファイル例: `deploy/nginx.http-only.conf.example`
@@ -461,7 +401,7 @@ sudo systemctl reload nginx
 ```
 
 <a id="section-4-11"></a>
-## 4-12 HTTPS 化手順例
+## 4-11 HTTPS 化手順例
 
 Let's Encrypt / Certbot の例です。
 
@@ -529,7 +469,36 @@ sudo systemctl reload nginx
 sudo certbot renew --dry-run
 ```
 
-<a id="section-sqlite"></a>
+<a id="section-4-12"></a>
+## 4-12 更新反映手順
+
+以前の `npm run build && sudo systemctl restart ...` は、稼働中の `next start` が参照する `.next` を同じ場所で再ビルドするため、低スペックVPSではCPU負荷や不安定化の原因になりえます。  
+このリポジトリでは本番用ビルドを `.runtime/standalone` に分離するように変更したので、以後は以下を使ってください。
+
+```bash
+npm run build:prod
+sudo systemctl restart boat-engine-scheduler
+sudo systemctl status boat-engine-scheduler --no-pager
+```
+
+CPUピークをさらに抑えたい場合は、旧プロセスを止めてからビルドしてください。
+
+```bash
+sudo systemctl stop boat-engine-scheduler
+npm run build:prod
+sudo systemctl start boat-engine-scheduler
+sudo systemctl status boat-engine-scheduler --no-pager
+```
+
+ビルド後に本番権限へ戻すのを忘れないでください。
+
+```bash
+sudo bash scripts/harden-production.sh /var/www/boat-engine-scheduler boat boat
+sudo systemctl restart boat-engine-scheduler
+```
+
+
+<a id="section-4-13"></a>
 ## 4-13 SQLite ファイル配置の考え方
 
 - 推奨: `/var/www/boat-engine-scheduler/data/app.db`
