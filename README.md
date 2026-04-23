@@ -168,7 +168,7 @@ pkill -f "next-server"
 - systemd は `ProtectSystem=strict` と `ReadWritePaths=/var/www/boat-engine-scheduler/data` を使う
 - `.runtime/standalone` 直下に未知の実行ファイルが混ざると起動失敗にする
 
-**<手順>>**
+**<手順>>**  
 ユーザー、ディレクトリ作成 → 一旦ディレクトリ削除 → リポジトリのクローン → ビルド →　CSVファイル読み込み → 起動 
 
 <a id="section-4-2"></a>
