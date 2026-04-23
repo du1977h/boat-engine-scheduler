@@ -571,12 +571,14 @@ npm run backup:create -- /srv/backups/boat-engine-scheduler
 - SQLite ファイル
 - `deploy/`
 - `prisma/`
+- `private-imports/`
 - `public/samples/`
 - `package.json`
 - `package-lock.json`
 - `README.md`
 
 復元時は、バックアップ先の `app/` 配下を参照すれば必要ファイルをまとめて確認できます。  
+`private-imports/` には実運用CSVが入るため、バックアップ先のアクセス権限にも注意してください。  
 整合性を最優先する場合は、次の順で停止中に実行してください。
 
 ```bash

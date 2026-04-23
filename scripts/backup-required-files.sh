@@ -84,6 +84,7 @@ copy_if_exists "${APP_ROOT}/.env.example" "$BACKUP_DIR/app/.env.example"
 copy_if_exists "$DATABASE_PATH" "$BACKUP_DIR/app/data/$(basename "$DATABASE_PATH")"
 copy_tree_if_exists "${APP_ROOT}/deploy" "$BACKUP_DIR/app/deploy"
 copy_tree_if_exists "${APP_ROOT}/prisma" "$BACKUP_DIR/app/prisma"
+copy_tree_if_exists "${APP_ROOT}/private-imports" "$BACKUP_DIR/app/private-imports"
 copy_tree_if_exists "${APP_ROOT}/public/samples" "$BACKUP_DIR/app/public/samples"
 copy_if_exists "${APP_ROOT}/package.json" "$BACKUP_DIR/app/package.json"
 copy_if_exists "${APP_ROOT}/package-lock.json" "$BACKUP_DIR/app/package-lock.json"
@@ -95,7 +96,7 @@ app_root=$APP_ROOT
 database_url=$DATABASE_URL_VALUE
 database_path=$DATABASE_PATH
 backup_dir=$BACKUP_DIR
-included_files=.env,.env.example,data/$(basename "$DATABASE_PATH"),deploy/,prisma/,public/samples/,package.json,package-lock.json,README.md
+included_files=.env,.env.example,data/$(basename "$DATABASE_PATH"),deploy/,prisma/,private-imports/,public/samples/,package.json,package-lock.json,README.md
 note=稼働中に取得した場合は SQLite の瞬間整合性が弱くなるため、可能なら systemd 停止中に取得してください。
 EOF
 
@@ -105,6 +106,7 @@ echo "  - .env"
 echo "  - $(basename "$DATABASE_PATH")"
 echo "  - deploy/"
 echo "  - prisma/"
+echo "  - private-imports/"
 echo "  - public/samples/"
 echo "  - package.json / package-lock.json / README.md"
 echo
