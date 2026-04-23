@@ -3,7 +3,9 @@
 ボートとエンジンの「保管 / 行き / 帰り」を、日付単位の月カレンダーで管理する日本語対応PWAです。  
 スマホ最優先で、部員CSV・ユーザーCSVの取り込み、ログイン、月カレンダー編集、月次集計、CSV出力までを単一VPS + Node.js + SQLite 前提で実装しています。
 
-## アプリ概要
+# 1. はじめに
+
+## 1-1 アプリ概要
 
 - 対象物は `ボート` と `エンジン`
 - 各日付ごとに `保管 / 行き / 帰り` を設定
@@ -12,7 +14,9 @@
 - 一般ユーザーも月カレンダー編集、集計閲覧、CSV出力が可能
 - PWAとしてホーム画面追加に対応
 
-## Node.jsのインストール
+# 2. 準備
+
+## 2-1 Node.jsのインストール
 
 ```
 # インストール
@@ -32,7 +36,7 @@ which npm
 - `which node` が `/usr/bin/node`
 - `which npm` が `/usr/bin/npm` または同等の固定パス
 
-## 環境変数一覧
+## 2-2 環境変数一覧
 
 `.env.example` をコピーして `.env` を作成してください。  
 `/var/www/boat-engine-scheduler` に clone する前提では、初期値のままで SQLite の保存先が一致します。
@@ -44,14 +48,18 @@ which npm
 | `SESSION_SECRET` | 必須 | 長くランダムな文字列 |
 | `APP_URL` | 必須 | 公開URL。例: `https://mw1.sailripper.top` |
 
-# 2. 準備
+## 2-3 CSVファイルの作成
 
-## CSVファイルの作成
-private-imports/members.private.csv: ログイン情報
-private-imports/users.private.csv: 部員メンバーCSV
-上記のファイルをpublic/samplesを参考に作成し、これらのファイルは.gitigonreに含める
+- `private-imports/users.private.csv`: ログイン用ユーザーCSV
+- `private-imports/members.private.csv`: 部員マスタCSV
 
-## 最短スタート手順
+`public/samples/` 配下のサンプルを参考に作成してください。  
+実運用CSVは Git 管理に含めず、`.gitignore` で除外される `private-imports/*.private.csv` として配置してください。
+
+
+# 3. 最短スタート
+
+## 3-1 最短スタート手順
 
 このリポジトリを `/var/www/boat-engine-scheduler` に clone して、そのまま実装や検証を始めたい場合の最短手順です。  
 まずは systemd 用の `boat` ユーザーへ切り替えず、普段使っている作業ユーザーで所有して進めるのが安全です。  
@@ -71,12 +79,12 @@ CSV読み込み＋起動
 npm run setup:dev
 npm run import:users -- private-imports/users.private.csv
 npm run import:members -- private-imports/members.private.csv
-npm run dev -- --hostname 0.0.0.0 --port 3010
+npm run dev -- --hostname 0.0.0.0 --port 3100
 ```
 
-ブラウザでは `http://<サーバーIP>:3010/login` を開きます。
+ブラウザでは `http://<サーバーIP>:3100/login` を開きます。
 
-### 6. 変更反映とやり直し
+## 3-2 変更反映とやり直し
 
 `private-imports/users.private.csv`,`private-imports/members.private.csv`を編集しただけでは、ログイン情報や部員マスタは変わりません。CSVの変更内容をDBへ反映するには、編集後に必ず再インポートを実行してください。
 
@@ -91,7 +99,7 @@ npm run import:members -- private-imports/members.private.csv
 npm run db:reset
 npm run db:init
 npm run import:users -- private-imports/users.private.csv
-npm run import:members -- public/samples/members.sample.csv
+npm run import:members -- private-imports/members.private.csv
 ```
 
 `npm run db:reset` はSQLiteファイル自体を削除するため、既存データは元に戻せません。必要なら先にバックアップを取ってください。
@@ -102,10 +110,12 @@ npm run import:members -- public/samples/members.sample.csv
 pkill -f "next-server"
 ```
 
-## 本番デプロイ手順
+# 4. 本番デプロイ
+
+## 4-1 本番デプロイ手順
 **本番では Git 管理外の実運用CSVを用意してください。**
 - 実運用用のCSVは `private-imports/users.private.csv` など Git 管理外の場所へ置いてください
-- `.gitignore` では `private-imports/` と `*.private.csv` を除外しています。
+- `.gitignore` では `private-imports/*.private.csv` を除外しています。
 
 以下は `mw1.sailripper.top` で公開する前提の具体例です。  
 このサーバーでは他アプリが `3000` を使用している想定で、本アプリは `127.0.0.1:3100` で待ち受け、nginx から `https://mw1.sailripper.top` へ公開する構成にしています。
@@ -120,7 +130,7 @@ pkill -f "next-server"
 
 不審な実行ファイルや user systemd unit を見つけた場合は、権限変更だけで済ませず、まず `.incident-quarantine/` へ隔離して証跡を残してください。
 
-### 1. `boat` ユーザー作成
+## 4-2 `boat` ユーザー作成
 
 本番では、アプリ専用の systemd 実行ユーザーとして `boat` を作成します。  
 ログイン用ユーザーではなく、アプリ起動・SQLite書き込み・ビルド実行を担うサービスユーザーです。
@@ -165,7 +175,7 @@ sudo usermod -d /var/www/boat-engine-scheduler boat
 getent passwd boat
 ```
 
-### 2. アプリ配置
+## 4-3 アプリ配置
 
 すでに `/var/www/boat-engine-scheduler` を作業ユーザー所有で使っている場合は、公開直前に所有者だけを `boat:boat` へ切り替えれば構いません。  
 作業ユーザー所有の既存 clone をそのまま本番配置へ切り替える例:
@@ -197,7 +207,7 @@ APP_URL="https://mw1.sailripper.top"
 本番へ切り替えるときは、`.env` の `SESSION_COOKIE_NAME` を `__Host-boat_engine_session` に変更してください。  
 HTTP の `localhost` 開発では `__Host-` 付きCookieはブラウザに保存されません。
 
-### 5. 依存関係とビルド
+## 4-4 依存関係とビルド
 
 すでに実装中に `npm run setup:dev` を実行済みであっても、本番切替時は `boat` ユーザー権限で依存関係とビルド成果物を作り直してください。
 
@@ -212,7 +222,7 @@ npm run build:prod
 '
 ```
 
-### 6. 初期ユーザーと部員投入
+## 4-5 初期ユーザーと部員投入
 
 ```bash
 sudo -u boat -H bash -c '
@@ -222,7 +232,7 @@ npm run import:members -- private-imports/members.private.csv
 '
 ```
 
-### 7. 単体起動確認
+## 4-6 単体起動確認
 
 ```bash
 sudo -u boat -H bash -c 'cd /var/www/boat-engine-scheduler && PORT=3100 HOSTNAME=127.0.0.1 /usr/bin/node .runtime/standalone/server.js'
@@ -231,7 +241,7 @@ sudo -u boat -H bash -c 'cd /var/www/boat-engine-scheduler && PORT=3100 HOSTNAME
 ブラウザで `http://127.0.0.1:3100/login` を確認します。  
 まだ nginx を通していない段階では、サーバー外部からは見えなくて正常です。
 
-### 8. 本番権限の固定
+## 4-7 本番権限の固定
 
 ビルド、CSV 取込、単体起動確認まで終わったら、本番権限へ固定します。  
 この処理でアプリ本体を `root:boat` 管理へ寄せ、`boat` が書き込めるのを `data/` だけに絞ります。
@@ -260,7 +270,7 @@ sudo ls -l /var/www/boat-engine-scheduler/.env
 - `data/` 配下ファイルは `660`
 - `.incident-quarantine/` を残す場合はディレクトリ `700`、配下ファイル `600`
 
-### 9. `mw1.sailripper.top` のDNS確認
+### `mw1.sailripper.top` のDNS確認
 
 `mw1.sailripper.top` がこのVPSのグローバルIPを向いていることを確認してください。
 
@@ -272,7 +282,7 @@ dig +short mw1.sailripper.top
 
 返ってきたIPがこのVPSのIPと一致していれば次へ進めます。
 
-## systemd 設定例
+## 4-8 systemd 設定例
 
 ファイル例: `deploy/boat-engine-scheduler.service`
 
@@ -332,7 +342,7 @@ sudo systemctl status boat-engine-scheduler.service
 最初の1回は必ず上の `cp` と `enable --now` を先に実行してください。
 また、`/var/www/boat-engine-scheduler` は `boat` 専用権限にしているため、`du` など別ユーザーでは通常 `cd` できません。中を確認したい場合は `sudo -u boat -H bash -c 'cd /var/www/boat-engine-scheduler && ls'` か `sudo ls -la /var/www/boat-engine-scheduler` を使ってください。
 
-## 更新反映手順
+## 4-9 更新反映手順
 
 以前の `npm run build && sudo systemctl restart ...` は、稼働中の `next start` が参照する `.next` を同じ場所で再ビルドするため、低スペックVPSではCPU負荷や不安定化の原因になりえます。  
 このリポジトリでは本番用ビルドを `.runtime/standalone` に分離するように変更したので、以後は以下を使ってください。
@@ -359,7 +369,7 @@ sudo bash scripts/harden-production.sh /var/www/boat-engine-scheduler boat boat
 sudo systemctl restart boat-engine-scheduler
 ```
 
-## nginx リバースプロキシ設定例
+## 4-10 nginx リバースプロキシ設定例
 
 初回は証明書がまだ無いので、先に HTTP-only 設定で nginx を通してください。  
 ファイル例: `deploy/nginx.http-only.conf.example`
@@ -438,7 +448,7 @@ sudo systemctl reload nginx
 
 このREADMEの例をそのまま使うなら、`deploy/nginx.conf.example` の `server_name` は `mw1.sailripper.top`、`proxy_pass` は `127.0.0.1:3100` のままで使えます。
 
-## HTTPS 化手順例
+## 4-11 HTTPS 化手順例
 
 Let's Encrypt / Certbot の例です。
 
@@ -474,8 +484,9 @@ sudo certbot renew --dry-run
 sudo mkdir -p /var/www/boat-engine-scheduler/data
 sudo chown -R boat:boat /var/www/boat-engine-scheduler/data
 ```
+# 5. その他
 
-## バックアップの考え方
+## 5-1 バックアップの考え方
 
 - 最低でも SQLite ファイルを日次バックアップ
 - 可能なら `tar` で `.env` と `deploy` 設定も一緒に退避
@@ -515,7 +526,7 @@ npm run backup:create -- /srv/backups/boat-engine-scheduler
 sudo systemctl start boat-engine-scheduler
 ```
 
-## セキュリティ上の注意点
+## 5-2 セキュリティ上の注意点
 
 - ログイン認証は DB の `users.passwordHash` のみを使い、平文パスワード設定ファイルは使わない
 - セッションは HTTP Only Cookie
@@ -542,31 +553,7 @@ sudo systemctl start boat-engine-scheduler
 - `.config/` にアプリ由来でないバイナリや user systemd unit が混ざっていないか確認し、不審物は `.incident-quarantine/` に隔離して証跡を残す
 - VPS侵害が疑われる場合は kill と設定修正だけで済ませず、`cron`、`systemd`、`authorized_keys`、`sudoers` を確認し、必要なら新規VPSへ再構築する
 
-## 既知の制約
-
-- 厳密な同時編集競合解決は未実装です
-- オフライン編集は未対応です
-- 兼任は警告表示のみで、保存禁止にはしていません
-- 兼任警告メッセージの表示は行っていません
-- 部員名は一意前提です
-- PWAは installable ですが、オフラインキャッシュは行っていません
-
-## テスト
-
-```bash
-npm test
-npm run build:prod
-```
-
-このリポジトリでは以下を確認済みです。
-
-- `npm run db:init`
-- `npm run import:users -- private-imports/users.private.csv`
-- `npm run import:members -- public/samples/members.sample.csv`
-- `npm test`
-- `npm run build:prod`
-
-## 今後の改善案
+## 5-3 今後の改善案
 
 - 部員の表示順を五十音専用ソートへ最適化
 - CSV取込結果の詳細エラーレポートを画面上で複数行表示
