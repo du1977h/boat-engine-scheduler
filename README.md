@@ -268,6 +268,7 @@ npm run build:prod
 
 <a id="section-4-5"></a>
 ## 4-5 初期ユーザーと部員投入
+**ユーザー情報とログイン情報をもつusers.private.csvとmembers.private.csvをprivate-importsに配置する**  
 
 ```bash
 sudo -u boat -H bash -c '
