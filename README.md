@@ -7,13 +7,16 @@
 
 - [1. はじめに](#section-1)
 - [1-1 アプリ概要](#section-1-1)
+
 - [2. 準備](#section-2)
 - [2-1 Node.jsのインストール](#section-2-1)
 - [2-2 環境変数一覧](#section-2-2)
 - [2-3 CSVファイルの作成](#section-2-3)
+
 - [3. 最短スタート](#section-3)
 - [3-1 最短スタート手順](#section-3-1)
 - [3-2 変更反映とやり直し](#section-3-2)
+
 - [4. 本番デプロイ](#section-4)
 - [4-1 本番デプロイ手順](#section-4-1)
 - [4-2 `boat` ユーザー作成](#section-4-2)
@@ -28,6 +31,7 @@
 - [4-10 nginx リバースプロキシ設定例](#section-4-10)
 - [4-11 HTTPS 化手順例](#section-4-11)
 - [SQLite ファイル配置の考え方](#section-sqlite)
+
 - [5. その他](#section-5)
 - [5-1 バックアップの考え方](#section-5-1)
 - [5-2 セキュリティ上の注意点](#section-5-2)
@@ -318,7 +322,7 @@ sudo ls -l /var/www/boat-engine-scheduler/.env
 - `.incident-quarantine/` を残す場合はディレクトリ `700`、配下ファイル `600`
 
 <a id="section-4-dns"></a>
-### `mw1.sailripper.top` のDNS確認
+## 4-8 `mw1.sailripper.top` のDNS確認
 
 `mw1.sailripper.top` がこのVPSのグローバルIPを向いていることを確認してください。
 
@@ -331,7 +335,7 @@ dig +short mw1.sailripper.top
 返ってきたIPがこのVPSのIPと一致していれば次へ進めます。
 
 <a id="section-4-8"></a>
-## 4-8 systemd 設定例
+## 4-9 systemd 設定例
 
 ファイル例: `deploy/boat-engine-scheduler.service`
 
@@ -392,7 +396,7 @@ sudo systemctl status boat-engine-scheduler.service
 また、`/var/www/boat-engine-scheduler` は `boat` 専用権限にしているため、`du` など別ユーザーでは通常 `cd` できません。中を確認したい場合は `sudo -u boat -H bash -c 'cd /var/www/boat-engine-scheduler && ls'` か `sudo ls -la /var/www/boat-engine-scheduler` を使ってください。
 
 <a id="section-4-9"></a>
-## 4-9 更新反映手順
+## 4-10 更新反映手順
 
 以前の `npm run build && sudo systemctl restart ...` は、稼働中の `next start` が参照する `.next` を同じ場所で再ビルドするため、低スペックVPSではCPU負荷や不安定化の原因になりえます。  
 このリポジトリでは本番用ビルドを `.runtime/standalone` に分離するように変更したので、以後は以下を使ってください。
@@ -420,7 +424,7 @@ sudo systemctl restart boat-engine-scheduler
 ```
 
 <a id="section-4-10"></a>
-## 4-10 nginx リバースプロキシ設定例
+## 4-11 nginx リバースプロキシ設定例
 
 初回は証明書がまだ無いので、先に HTTP-only 設定で nginx を通してください。  
 ファイル例: `deploy/nginx.http-only.conf.example`
@@ -500,7 +504,7 @@ sudo systemctl reload nginx
 このREADMEの例をそのまま使うなら、`deploy/nginx.conf.example` の `server_name` は `mw1.sailripper.top`、`proxy_pass` は `127.0.0.1:3100` のままで使えます。
 
 <a id="section-4-11"></a>
-## 4-11 HTTPS 化手順例
+## 4-12 HTTPS 化手順例
 
 Let's Encrypt / Certbot の例です。
 
@@ -525,7 +529,7 @@ sudo certbot renew --dry-run
 ```
 
 <a id="section-sqlite"></a>
-## SQLite ファイル配置の考え方
+## 4-13 SQLite ファイル配置の考え方
 
 - 推奨: `/var/www/boat-engine-scheduler/data/app.db`
 - アプリ更新ディレクトリと分離するとバックアップとロールバックが楽です
