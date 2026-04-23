@@ -118,6 +118,7 @@ mkdir -p private-imports
 ```
 
 CSV読み込み＋起動
+すでの3100番のポートが使用されているとブラウザが立ち上がりません。
 ```
 npm run setup:dev
 npm run import:users -- private-imports/users.private.csv
