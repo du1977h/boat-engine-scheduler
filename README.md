@@ -158,22 +158,18 @@ pkill -f "next-server"
 
 <a id="section-4-1"></a>
 ## 4-1 本番デプロイ手順
-**本番では Git 管理外の実運用CSVを用意してください。**
+**<注意点>**
 - 実運用用のCSVは `private-imports/users.private.csv` など Git 管理外の場所へ置いてください
 - `.gitignore` では `private-imports/*.private.csv` を除外しています。
-
-以下は `mw1.sailripper.top` で公開する前提の具体例です。  
-このサーバーでは他アプリが `3000` を使用している想定で、本アプリは `127.0.0.1:3100` で待ち受け、nginx から `https://mw1.sailripper.top` へ公開する構成にしています。
-
-本番では、実行中にアプリ本体へ書き込めない状態にするのが重要です。  
-この README の本番手順では、最終的に次の状態へ寄せます。
-
+- このサーバーでは他アプリが `3000` を使用している想定で、本アプリは `127.0.0.1:3100` で待ち受け、nginx から `https://mw1.sailripper.top` へ公開する構成にしています。
+- 本番では、実行中にアプリ本体へ書き込めない状態にするのが重要です。  
 - アプリ本体は `root:boat` 管理
 - `boat` ユーザーが書き込めるのは `data/` のみ
 - systemd は `ProtectSystem=strict` と `ReadWritePaths=/var/www/boat-engine-scheduler/data` を使う
 - `.runtime/standalone` 直下に未知の実行ファイルが混ざると起動失敗にする
 
-不審な実行ファイルや user systemd unit を見つけた場合は、権限変更だけで済ませず、まず `.incident-quarantine/` へ隔離して証跡を残してください。
+**<手順>>**
+ユーザー、ディレクトリ作成 → 一旦ディレクトリ削除 → リポジトリのクローン → ビルド →　CSVファイル読み込み → 起動 
 
 <a id="section-4-2"></a>
 ## 4-2 `boat` ユーザー作成
