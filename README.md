@@ -89,11 +89,7 @@ which npm
 
 <a id="section-2-3"></a>
 ## 2-3 CSVファイルの作成
-CSVファイルを保存するディレクトリの作成
-```
-mkdir private-imports
-```
-
+ユーザー情報やログイン情報を記載する
 - `private-imports/users.private.csv`: ログイン用ユーザーCSV
 - `private-imports/members.private.csv`: 部員マスタCSV
 
