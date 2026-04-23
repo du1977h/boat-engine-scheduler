@@ -502,6 +502,10 @@ sudo systemctl reload nginx
 ```bash
 sudo certbot renew --dry-run
 ```
+サービス起動確認:
+```
+sudo systemctl status boat-engine-scheduler
+```
 
 <a id="section-4-12"></a>
 ## 4-12 更新反映手順
