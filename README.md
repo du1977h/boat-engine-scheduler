@@ -227,7 +227,10 @@ getent passwd boat
 
 ```bash
 sudo rm -rf /var/www/boat-engine-scheduler
-sudo -u boat -H git clone <your-repo> /var/www/boat-engine-scheduler
+git clone git@github_h:du1977h/boat-engine-scheduler.git
+sudo mkdir -p /var/www
+sudo mv boat-engine-scheduler /var/www/boat-engine-scheduler
+sudo chown -R boat:boat /var/www/boat-engine-scheduler
 sudo -u boat -H bash -c 'cd /var/www/boat-engine-scheduler && cp .env.example .env'
 sudo chown -R boat:boat /var/www/boat-engine-scheduler
 sudo chmod 640 /var/www/boat-engine-scheduler/.env
