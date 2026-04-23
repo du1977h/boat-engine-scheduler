@@ -12,7 +12,7 @@ function resolveSqlitePath(databaseUrl: string) {
     throw new Error("DATABASE_URL の SQLite パスが不正です。");
   }
 
-  return path.isAbsolute(rawPath) ? rawPath : path.join(process.cwd(), "prisma", rawPath);
+  return path.isAbsolute(rawPath) ? rawPath : path.join(process.cwd(), rawPath);
 }
 
 async function main() {
