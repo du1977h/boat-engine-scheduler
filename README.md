@@ -455,6 +455,25 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
+<a id="section-4-11"></a>
+## 4-12 HTTPS 化手順例
+
+Let's Encrypt / Certbot の例です。
+
+1. 先に `deploy/nginx.http-only.conf.example` を `/etc/nginx/sites-available/boat-engine-scheduler` へ配置して nginx を reload
+2. `mw1.sailripper.top` の DNS がこのVPSを向いていることを確認
+3. Certbot で証明書を取得
+4. その後で `deploy/nginx.conf.example` に差し替えて nginx を reload
+
+```bash
+sudo apt update
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d mw1.sailripper.top
+sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/boat-engine-scheduler
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
 証明書取得後の完成形は次のファイルです。  
 ファイル例: `deploy/nginx.conf.example`
 
@@ -498,25 +517,6 @@ sudo systemctl reload nginx
 ```
 
 このREADMEの例をそのまま使うなら、`deploy/nginx.conf.example` の `server_name` は `mw1.sailripper.top`、`proxy_pass` は `127.0.0.1:3100` のままで使えます。
-
-<a id="section-4-11"></a>
-## 4-12 HTTPS 化手順例
-
-Let's Encrypt / Certbot の例です。
-
-1. 先に `deploy/nginx.http-only.conf.example` を `/etc/nginx/sites-available/boat-engine-scheduler` へ配置して nginx を reload
-2. `mw1.sailripper.top` の DNS がこのVPSを向いていることを確認
-3. Certbot で証明書を取得
-4. その後で `deploy/nginx.conf.example` に差し替えて nginx を reload
-
-```bash
-sudo apt update
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d mw1.sailripper.top
-sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/boat-engine-scheduler
-sudo nginx -t
-sudo systemctl reload nginx
-```
 
 更新確認:
 
