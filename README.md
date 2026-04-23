@@ -3,8 +3,40 @@
 ボートとエンジンの「保管 / 行き / 帰り」を、日付単位の月カレンダーで管理する日本語対応PWAです。  
 スマホ最優先で、部員CSV・ユーザーCSVの取り込み、ログイン、月カレンダー編集、月次集計、CSV出力までを単一VPS + Node.js + SQLite 前提で実装しています。
 
+## 目次
+
+- [1. はじめに](#section-1)
+- [1-1 アプリ概要](#section-1-1)
+- [2. 準備](#section-2)
+- [2-1 Node.jsのインストール](#section-2-1)
+- [2-2 環境変数一覧](#section-2-2)
+- [2-3 CSVファイルの作成](#section-2-3)
+- [3. 最短スタート](#section-3)
+- [3-1 最短スタート手順](#section-3-1)
+- [3-2 変更反映とやり直し](#section-3-2)
+- [4. 本番デプロイ](#section-4)
+- [4-1 本番デプロイ手順](#section-4-1)
+- [4-2 `boat` ユーザー作成](#section-4-2)
+- [4-3 アプリ配置](#section-4-3)
+- [4-4 依存関係とビルド](#section-4-4)
+- [4-5 初期ユーザーと部員投入](#section-4-5)
+- [4-6 単体起動確認](#section-4-6)
+- [4-7 本番権限の固定](#section-4-7)
+- [`mw1.sailripper.top` のDNS確認](#section-4-dns)
+- [4-8 systemd 設定例](#section-4-8)
+- [4-9 更新反映手順](#section-4-9)
+- [4-10 nginx リバースプロキシ設定例](#section-4-10)
+- [4-11 HTTPS 化手順例](#section-4-11)
+- [SQLite ファイル配置の考え方](#section-sqlite)
+- [5. その他](#section-5)
+- [5-1 バックアップの考え方](#section-5-1)
+- [5-2 セキュリティ上の注意点](#section-5-2)
+- [5-3 今後の改善案](#section-5-3)
+
+<a id="section-1"></a>
 # 1. はじめに
 
+<a id="section-1-1"></a>
 ## 1-1 アプリ概要
 
 - 対象物は `ボート` と `エンジン`
@@ -14,8 +46,10 @@
 - 一般ユーザーも月カレンダー編集、集計閲覧、CSV出力が可能
 - PWAとしてホーム画面追加に対応
 
+<a id="section-2"></a>
 # 2. 準備
 
+<a id="section-2-1"></a>
 ## 2-1 Node.jsのインストール
 
 ```
@@ -36,6 +70,7 @@ which npm
 - `which node` が `/usr/bin/node`
 - `which npm` が `/usr/bin/npm` または同等の固定パス
 
+<a id="section-2-2"></a>
 ## 2-2 環境変数一覧
 
 `.env.example` をコピーして `.env` を作成してください。  
@@ -48,6 +83,7 @@ which npm
 | `SESSION_SECRET` | 必須 | 長くランダムな文字列 |
 | `APP_URL` | 必須 | 公開URL。例: `https://mw1.sailripper.top` |
 
+<a id="section-2-3"></a>
 ## 2-3 CSVファイルの作成
 
 - `private-imports/users.private.csv`: ログイン用ユーザーCSV
@@ -57,8 +93,10 @@ which npm
 実運用CSVは Git 管理に含めず、`.gitignore` で除外される `private-imports/*.private.csv` として配置してください。
 
 
+<a id="section-3"></a>
 # 3. 最短スタート
 
+<a id="section-3-1"></a>
 ## 3-1 最短スタート手順
 
 このリポジトリを `/var/www/boat-engine-scheduler` に clone して、そのまま実装や検証を始めたい場合の最短手順です。  
@@ -84,6 +122,7 @@ npm run dev -- --hostname 0.0.0.0 --port 3100
 
 ブラウザでは `http://<サーバーIP>:3100/login` を開きます。
 
+<a id="section-3-2"></a>
 ## 3-2 変更反映とやり直し
 
 `private-imports/users.private.csv`,`private-imports/members.private.csv`を編集しただけでは、ログイン情報や部員マスタは変わりません。CSVの変更内容をDBへ反映するには、編集後に必ず再インポートを実行してください。
@@ -110,8 +149,10 @@ npm run import:members -- private-imports/members.private.csv
 pkill -f "next-server"
 ```
 
+<a id="section-4"></a>
 # 4. 本番デプロイ
 
+<a id="section-4-1"></a>
 ## 4-1 本番デプロイ手順
 **本番では Git 管理外の実運用CSVを用意してください。**
 - 実運用用のCSVは `private-imports/users.private.csv` など Git 管理外の場所へ置いてください
@@ -130,6 +171,7 @@ pkill -f "next-server"
 
 不審な実行ファイルや user systemd unit を見つけた場合は、権限変更だけで済ませず、まず `.incident-quarantine/` へ隔離して証跡を残してください。
 
+<a id="section-4-2"></a>
 ## 4-2 `boat` ユーザー作成
 
 本番では、アプリ専用の systemd 実行ユーザーとして `boat` を作成します。  
@@ -175,6 +217,7 @@ sudo usermod -d /var/www/boat-engine-scheduler boat
 getent passwd boat
 ```
 
+<a id="section-4-3"></a>
 ## 4-3 アプリ配置
 
 すでに `/var/www/boat-engine-scheduler` を作業ユーザー所有で使っている場合は、公開直前に所有者だけを `boat:boat` へ切り替えれば構いません。  
@@ -207,6 +250,7 @@ APP_URL="https://mw1.sailripper.top"
 本番へ切り替えるときは、`.env` の `SESSION_COOKIE_NAME` を `__Host-boat_engine_session` に変更してください。  
 HTTP の `localhost` 開発では `__Host-` 付きCookieはブラウザに保存されません。
 
+<a id="section-4-4"></a>
 ## 4-4 依存関係とビルド
 
 すでに実装中に `npm run setup:dev` を実行済みであっても、本番切替時は `boat` ユーザー権限で依存関係とビルド成果物を作り直してください。
@@ -222,6 +266,7 @@ npm run build:prod
 '
 ```
 
+<a id="section-4-5"></a>
 ## 4-5 初期ユーザーと部員投入
 
 ```bash
@@ -232,6 +277,7 @@ npm run import:members -- private-imports/members.private.csv
 '
 ```
 
+<a id="section-4-6"></a>
 ## 4-6 単体起動確認
 
 ```bash
@@ -241,6 +287,7 @@ sudo -u boat -H bash -c 'cd /var/www/boat-engine-scheduler && PORT=3100 HOSTNAME
 ブラウザで `http://127.0.0.1:3100/login` を確認します。  
 まだ nginx を通していない段階では、サーバー外部からは見えなくて正常です。
 
+<a id="section-4-7"></a>
 ## 4-7 本番権限の固定
 
 ビルド、CSV 取込、単体起動確認まで終わったら、本番権限へ固定します。  
@@ -270,6 +317,7 @@ sudo ls -l /var/www/boat-engine-scheduler/.env
 - `data/` 配下ファイルは `660`
 - `.incident-quarantine/` を残す場合はディレクトリ `700`、配下ファイル `600`
 
+<a id="section-4-dns"></a>
 ### `mw1.sailripper.top` のDNS確認
 
 `mw1.sailripper.top` がこのVPSのグローバルIPを向いていることを確認してください。
@@ -282,6 +330,7 @@ dig +short mw1.sailripper.top
 
 返ってきたIPがこのVPSのIPと一致していれば次へ進めます。
 
+<a id="section-4-8"></a>
 ## 4-8 systemd 設定例
 
 ファイル例: `deploy/boat-engine-scheduler.service`
@@ -342,6 +391,7 @@ sudo systemctl status boat-engine-scheduler.service
 最初の1回は必ず上の `cp` と `enable --now` を先に実行してください。
 また、`/var/www/boat-engine-scheduler` は `boat` 専用権限にしているため、`du` など別ユーザーでは通常 `cd` できません。中を確認したい場合は `sudo -u boat -H bash -c 'cd /var/www/boat-engine-scheduler && ls'` か `sudo ls -la /var/www/boat-engine-scheduler` を使ってください。
 
+<a id="section-4-9"></a>
 ## 4-9 更新反映手順
 
 以前の `npm run build && sudo systemctl restart ...` は、稼働中の `next start` が参照する `.next` を同じ場所で再ビルドするため、低スペックVPSではCPU負荷や不安定化の原因になりえます。  
@@ -369,6 +419,7 @@ sudo bash scripts/harden-production.sh /var/www/boat-engine-scheduler boat boat
 sudo systemctl restart boat-engine-scheduler
 ```
 
+<a id="section-4-10"></a>
 ## 4-10 nginx リバースプロキシ設定例
 
 初回は証明書がまだ無いので、先に HTTP-only 設定で nginx を通してください。  
@@ -448,6 +499,7 @@ sudo systemctl reload nginx
 
 このREADMEの例をそのまま使うなら、`deploy/nginx.conf.example` の `server_name` は `mw1.sailripper.top`、`proxy_pass` は `127.0.0.1:3100` のままで使えます。
 
+<a id="section-4-11"></a>
 ## 4-11 HTTPS 化手順例
 
 Let's Encrypt / Certbot の例です。
@@ -472,6 +524,7 @@ sudo systemctl reload nginx
 sudo certbot renew --dry-run
 ```
 
+<a id="section-sqlite"></a>
 ## SQLite ファイル配置の考え方
 
 - 推奨: `/var/www/boat-engine-scheduler/data/app.db`
@@ -484,8 +537,10 @@ sudo certbot renew --dry-run
 sudo mkdir -p /var/www/boat-engine-scheduler/data
 sudo chown -R boat:boat /var/www/boat-engine-scheduler/data
 ```
+<a id="section-5"></a>
 # 5. その他
 
+<a id="section-5-1"></a>
 ## 5-1 バックアップの考え方
 
 - 最低でも SQLite ファイルを日次バックアップ
@@ -526,6 +581,7 @@ npm run backup:create -- /srv/backups/boat-engine-scheduler
 sudo systemctl start boat-engine-scheduler
 ```
 
+<a id="section-5-2"></a>
 ## 5-2 セキュリティ上の注意点
 
 - ログイン認証は DB の `users.passwordHash` のみを使い、平文パスワード設定ファイルは使わない
@@ -553,6 +609,7 @@ sudo systemctl start boat-engine-scheduler
 - `.config/` にアプリ由来でないバイナリや user systemd unit が混ざっていないか確認し、不審物は `.incident-quarantine/` に隔離して証跡を残す
 - VPS侵害が疑われる場合は kill と設定修正だけで済ませず、`cron`、`systemd`、`authorized_keys`、`sudoers` を確認し、必要なら新規VPSへ再構築する
 
+<a id="section-5-3"></a>
 ## 5-3 今後の改善案
 
 - 部員の表示順を五十音専用ソートへ最適化
