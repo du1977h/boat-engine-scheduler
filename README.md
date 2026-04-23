@@ -223,8 +223,6 @@ getent passwd boat
 すでに `/var/www/boat-engine-scheduler` を作業ユーザー所有で使っている場合は、公開直前に所有者だけを `boat:boat` へ切り替えれば構いません。  
 作業ユーザー所有の既存 clone をそのまま本番配置へ切り替える例:
 
-最初から `boat` ユーザーで clone する例:
-
 ```bash
 sudo rm -rf /var/www/boat-engine-scheduler
 cd /var/www
