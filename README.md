@@ -270,10 +270,10 @@ npm run build:prod
 ## 4-5 初期ユーザーと部員投入
 **ユーザー情報とログイン情報をもつusers.private.csvとmembers.private.csvをprivate-importsに配置する**  
 ```bash
-sudo -u boat -H bash -c 'mkdir /var/www/boat-engine-schedule/private-imports
-sudo -u boat -H bash -c 'cp /srv/private-imports/users.private.csv'
-sudo -u boat -H bash -c 'cp /srv/private-imports/members.private.csv'
-
+sudo -u boat -H bash -c '
+mkdir /var/www/boat-engine-schedule/private-imports && 
+cp /srv/private-imports/users.private.csv /srv/private-imports/members.private.csv /var/www/boat-engine-schedule/private-imports
+'
 ```
 ```bash
 sudo -u boat -H bash -c '
