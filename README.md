@@ -51,6 +51,20 @@
 - 一般ユーザーも月カレンダー編集、集計閲覧、CSV出力が可能
 - PWAとしてホーム画面追加に対応
 
+採用技術:
+
+- Next.js `16.2.3`
+- React `19`
+- Node.js `22` 以上
+- SQLite + Prisma
+- npm + `package-lock.json`
+
+Next.js は `package.json` と `package-lock.json` で `16.2.3` に固定しています。依存関係を入れるときは、原則として lockfile を再現する `npm ci` を使ってください。Next.js のバージョンを更新する場合は、次のように明示的に固定してから動作確認してください。
+
+```bash
+npm install next@16.2.3 --save-exact
+```
+
 <a id="section-2"></a>
 # 2. 準備
 
@@ -260,7 +274,7 @@ HTTP の `localhost` 開発では `__Host-` 付きCookieはブラウザに保存
 ```bash
 sudo -u boat -H bash -c '
 cd /var/www/boat-engine-scheduler &&
-npm install
+npm ci
 npx prisma generate
 mkdir -p /var/www/boat-engine-scheduler/data
 npm run db:init

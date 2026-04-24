@@ -13,8 +13,8 @@ else
   echo ".env は既に存在するため、そのまま利用します。"
 fi
 
-echo "依存関係をインストールします..."
-npm install
+echo "依存関係を package-lock.json どおりにインストールします..."
+npm ci
 
 echo "Prisma Client を生成します..."
 npx prisma generate
